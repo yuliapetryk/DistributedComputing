@@ -2,29 +2,29 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainWindow extends JFrame {
-    private static Thread thread1;
-    private static Thread thread2;
-    private static Thread firstThread;
-    private static  Thread secondThread;
+    private static Thread firstThreadA;
+    private static Thread secondThreadA;
+    private static Thread firstThreadB;
+    private static  Thread secondThreadB;
     static int SEMAPHORE = 0;
     private static JSlider slider;
-    private static JButton start = new JButton("Start!");
-    private static JButton stop = new JButton("Stop!");
+    private static JButton start;
+    private static JButton stop;
     private static JButton buttonStartFirst;
     private static JButton buttonStopFirst;
     private static JButton buttonStartSecond;
     private static JButton buttonStopSecond;
     static  JLabel occupied;
     private static void startThread() {
-        thread1.start();
-        thread2.start();
+        firstThreadA.start();
+        secondThreadA.start();
         start.setEnabled(false);
         stop.setEnabled(true);
 
     }
     private static void stopThread() {
-        thread1.interrupt();
-        thread2.interrupt();
+        firstThreadA.interrupt();
+        secondThreadA.interrupt();
         stop.setEnabled(false);
         start.setEnabled(true);
     }
@@ -34,10 +34,9 @@ public class MainWindow extends JFrame {
             occupied.setVisible(true);
             return;
         }
-        firstThread = new Thread(new ThreadRunnable(-1, slider));
-        firstThread.setDaemon(true);
-        firstThread.start();
-        firstThread.setPriority(1);
+        firstThreadB = new Thread(new ThreadRunnable( slider, 10000000, -1));
+        firstThreadB.start();
+        firstThreadB.setPriority(1);
         buttonStopFirst.setEnabled(true);
         buttonStartFirst.setEnabled(false);
         SEMAPHORE = 1;
@@ -48,10 +47,9 @@ public class MainWindow extends JFrame {
             occupied.setVisible(true);
             return;
         }
-        secondThread = new Thread(new ThreadRunnable(1, slider));
-        secondThread.setDaemon(true);
-        secondThread.start();
-        secondThread.setPriority(10);
+        secondThreadB = new Thread(new ThreadRunnable( slider, 10000000,1));
+        secondThreadB.start();
+        secondThreadB.setPriority(10);
         SEMAPHORE = 1;
         buttonStopSecond.setEnabled(true);
         buttonStartSecond.setEnabled(false);
@@ -60,22 +58,22 @@ public class MainWindow extends JFrame {
     private static void stopFirstThread(){
 
         if (SEMAPHORE== 1) {
-        firstThread.interrupt();
-        buttonStopFirst.setEnabled(false);
-        buttonStartFirst.setEnabled(true);
-        occupied.setVisible(false);
-        SEMAPHORE =0;
+            firstThreadB.interrupt();
+            buttonStopFirst.setEnabled(false);
+            buttonStartFirst.setEnabled(true);
+            occupied.setVisible(false);
+            SEMAPHORE =0;
         }
 
     }
 
     private static void stopSecondThread(){
         if (SEMAPHORE == 1) {
-        secondThread.interrupt();
-        buttonStopSecond.setEnabled(false);
-        buttonStartSecond.setEnabled(true);
-        occupied.setVisible(false);
-        SEMAPHORE =0;
+            secondThreadB.interrupt();
+            buttonStopSecond.setEnabled(false);
+            buttonStartSecond.setEnabled(true);
+            occupied.setVisible(false);
+            SEMAPHORE =0;
         }
     }
 
@@ -94,12 +92,11 @@ public class MainWindow extends JFrame {
         slider.setPaintLabels(true);
         slider.setPreferredSize(new Dimension(550, slider.getPreferredSize().height));
 
-        thread1 = new Thread(new ThreadRunnable(-1, slider));
-        thread2 = new Thread(new ThreadRunnable(1, slider));
-        thread1.setDaemon(true);
-        thread2.setDaemon(true);
-        thread1.setPriority(1);
-        thread2.setPriority(1);
+        firstThreadA = new Thread(new ThreadRunnable( slider, 1000000, -1));
+        secondThreadA = new Thread(new ThreadRunnable( slider, 1000000, 1));
+
+        firstThreadA.setPriority(1);
+        secondThreadA.setPriority(1);
 
         JPanel spinnerPanel = new JPanel(new GridLayout(1, 2, 10, 10));
         JSpinner spinnerLeft = new JSpinner(new SpinnerNumberModel(1, 1, 10, 1));
@@ -109,26 +106,26 @@ public class MainWindow extends JFrame {
         spinnerPanel.add(spinnerLeft);
         spinnerPanel.add(spinnerRight);
         spinnerLeft.addChangeListener(e -> {
-            int changedValue = (int) spinnerLeft.getValue();
-            thread1.setPriority(changedValue);
-            System.out.println(thread1.getPriority());
-
+            int value = (int) spinnerLeft.getValue();
+            firstThreadA.setPriority(value);
         });
 
         spinnerRight.addChangeListener(e -> {
-            int changedValue = (int) spinnerRight.getValue();
-            thread2.setPriority(changedValue);
-            System.out.println(thread2.getPriority());
+            int value= (int) spinnerRight.getValue();
+            secondThreadA.setPriority(value);
         });
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
+        start = new JButton("Start!");
         start.setPreferredSize(new Dimension(250, start.getPreferredSize().height));
         start.addActionListener(e -> startThread());
         buttonPanel.add(start);
 
+        stop = new JButton("Stop!");
         stop.setPreferredSize(new Dimension(250, start.getPreferredSize().height));
         stop.addActionListener(e -> stopThread());
+        stop.setEnabled(false);
         buttonPanel.add(stop);
 
         mainWindow.add(slider);
@@ -140,6 +137,7 @@ public class MainWindow extends JFrame {
         buttonStopFirst= new JButton("Stop1");
         buttonStartSecond= new JButton("Start2");
         buttonStopSecond= new JButton("Stop2");
+
         buttonStartFirst.addActionListener(e -> startFirstThread());
         buttonStartSecond.addActionListener(e -> startSecondThread());
         buttonStopFirst.addActionListener(e -> stopFirstThread());
