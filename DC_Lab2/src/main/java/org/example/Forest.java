@@ -53,8 +53,6 @@ public class Forest {
 
         divisions.get(random.nextInt(NUM_DIVISIONS-1)).set(random.nextInt(NUM_DIVISIONS-1),true);
         Forest forest = new Forest();
-        System.out.println(NUM_BEES);
-        System.out.println(NUM_DIVISIONS);
         forest.threads = new Thread[NUM_BEES];
         forest.startThreads();
 

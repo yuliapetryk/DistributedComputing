@@ -68,7 +68,7 @@ public class Military   {
     public static void actIvanov() throws InterruptedException {
          int delivered = 0;
          while (delivered!=propetry.size()) {
-             System.out.println("Ivanov: "+ propetry.get(delivered).getId()); //rewrite!!!!!!
+             System.out.println("Ivanov brought property "+ (propetry.get(delivered).getId()+1));
              Delivery.put(propetry.get(delivered));
              delivered++;
          }
@@ -78,7 +78,7 @@ public class Military   {
         int loaded = 0;
         while ( loaded!=propetry.size()) {
             Property removed = Delivery.take();
-            System.out.println("Petrov: "+ propetry.get(loaded).getId());
+            System.out.println("Petrov loaded the property "+ (propetry.get(loaded).getId()+1));
             Loading.put(removed);
             loaded++;
             }
@@ -88,7 +88,7 @@ public class Military   {
         int counted = 0;
         while (counted!=propetry.size()) {
             Property removed =Loading.take();
-            System.out.println("Nechyporchuk: "+ removed.getId());
+            System.out.println("Nechyporchuk counted  property "+ (removed.getId()+1));
             counted++;
         }
     }
