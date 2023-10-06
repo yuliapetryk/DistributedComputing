@@ -116,7 +116,7 @@ public  class Honey {
         int numBees = 3;
         int potCapacity =6;
         HoneyPot   honeyPot  = new HoneyPot(potCapacity);
-        ExecutorService executor = Executors.newFixedThreadPool(numBees + 1);
+        ExecutorService executor = Executors.newFixedThreadPool(numBees);
         Bear bear = new Bear(honeyPot);
         new Thread(bear).start();
 
