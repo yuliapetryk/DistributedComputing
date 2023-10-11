@@ -12,7 +12,7 @@ public class Controller {
 
     static File database = new File("data.txt");
 
-    public static void getPhoneNumbers(String user) {
+    public  void getPhoneNumbers(String user) {
         try {
             readWriteLock.readLock().lock();
             List<String> phoneNumbers = new ArrayList<>();
@@ -38,7 +38,7 @@ public class Controller {
         }
     }
 
-    public static void getNames(String phoneNumber) {
+    public  void getNames(String phoneNumber) {
         try {
             readWriteLock.readLock().lock();
             List<String> names = new ArrayList<>();
