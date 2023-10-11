@@ -15,7 +15,7 @@ import (
 
 func streamGardener(garden [][]int, mutex *sync.RWMutex) {
 	for {
-		mutex.RLock()
+		mutex.Lock()
 		for i := 0; i < len(garden); i++ {
 			for j := 0; j < len(garden[i]); j++ {
 				if garden[i][j] == 0 {
@@ -23,7 +23,7 @@ func streamGardener(garden [][]int, mutex *sync.RWMutex) {
 				}
 			}
 		}
-		mutex.RUnlock()
+		mutex.Unlock()
 		time.Sleep(7000 * time.Millisecond)
 	}
 }
