@@ -1,12 +1,11 @@
 #pragma once
+
 #include <iostream>
 #include <random>
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #include <mpi.h>
-#include <iostream>
+
 
 static int ProcNum = 0;
 static int ProcRank = 0;
@@ -17,12 +16,12 @@ namespace Multiplication {
 	
 	namespace General {
 		double* RandomDataInitialization(  int Size) {
-			int MatrSize = Size * Size;
-			double* Matr = new double[MatrSize];
-			for (int i = 0; i < MatrSize; i++) {
-				Matr[i] = (rand() % (5 ) );
+			int MatrixSize = Size * Size;
+			double* Matrix = new double[MatrixSize];
+			for (int i = 0; i < MatrixSize; i++) {
+				Matrix[i] = (rand() % (5 ) );
 			}
-			return Matr;
+			return Matrix;
 		}
 
 
@@ -35,11 +34,134 @@ namespace Multiplication {
 				}
 			}
 		}
-		
-		
-		
 
+		void TransposeMatrix(double* matrix, int size) {
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					double t = matrix[i * size + j];
+					matrix[i * size + j] = matrix[j * size + i];
+					matrix[j * size + i] = t;
+				}
+			}
+		}
+		
 	}
+
+	namespace BlockStriped {
+		int Coords;
+
+		void Decomposition(double* LineB, int Length, int Size) {
+			MPI_Status Status;
+			int NextCoord = Coords + 1;
+			if (NextCoord == ProcNum) NextCoord = 0;
+			int PrevCoord = Coords - 1;
+			if (PrevCoord == -1) PrevCoord = ProcNum - 1;
+			MPI_Sendrecv_replace(LineB, Length * Size, MPI_DOUBLE, NextCoord, 0, PrevCoord, 0, ColComm, &Status);
+		}
+
+		void BlockStripedMultiplication(double* LineA, double* LineB, double* Result, int Size, int Length, int iter) {
+			int l = Length * iter;
+			for (int i = 0; i < Length; i++) {
+				for (int j = 0; j < Length; j++) {
+					for (int k = 0; k < Size; k++) {
+						Result[Length * iter] += LineA[i * Size + k] * LineB[j * Size + k];
+					}
+					l++;
+				}
+				l += Size - Length;
+			}
+		}
+
+		void ComputeLine(double* LineA, double* LineB, double* LineC, int Length, int Size) {
+			int iter = Coords;
+			for (int i = 0; i < ProcNum; i++) {
+				BlockStripedMultiplication(LineA, LineB, LineC, Size, Length, iter);
+				iter++;
+				if (iter == ProcNum) {
+					iter = 0;
+				}
+				Decomposition(LineB, Length, Size);
+			}
+		}
+
+		void ProcessInitialization( double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double*& pAblock, double*& pBblock, double*& pCblock,  int& Size, int& BlockSize) {
+			BlockSize = Size / ProcNum;
+
+			pAblock = new double[BlockSize * BlockSize];
+			pBblock = new double[BlockSize * BlockSize];
+			pCblock = new double[BlockSize * BlockSize];
+
+			if (ProcRank == 0) {
+				pAMatrix = new double[Size * Size];
+				pBMatrix = new double[Size * Size];
+				pCMatrix = new double[Size * Size];
+				pAMatrix = General::RandomDataInitialization(Size);
+				pBMatrix = General::RandomDataInitialization(Size);
+			}
+		}
+
+		void  DataDistribution(double* A, double* B, double* LineAd, double* LineBd, int Size, int Length) {
+			if (ProcRank == 0) {
+				General::TransposeMatrix(B, Size);
+			}
+			MPI_Scatter(&(A[Size * Length * Coords]), Length * Size, MPI_DOUBLE, LineAd, Length * Size, MPI_DOUBLE, 0, RowComm);
+			MPI_Scatter(&(B[Size * Length * Coords]), Length * Size, MPI_DOUBLE, LineBd, Length * Size, MPI_DOUBLE, 0, RowComm);
+			
+		}
+
+		void ResultCollection(double* C, double* LineCd, int Length, int Size) {
+			MPI_Gather(LineCd, Length * Size, MPI_DOUBLE, C, Length * Size, MPI_DOUBLE, 0, RowComm);
+		}
+
+		void Deconstruct(double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double* pAblock, double* pBblock, double* pCblock, double* pTemporaryAblock = NULL) {
+			if (ProcRank == 0) {
+				delete[] pAMatrix;
+				delete[] pBMatrix;
+				delete[] pCMatrix;
+			}
+			delete[] pAblock;
+			delete[] pBblock;
+			delete[] pCblock;
+			if (!pTemporaryAblock) {
+				delete[] pTemporaryAblock;
+			}
+		}
+
+		void runBlockStripedAlg(int argc, char* argv[], int Size) {
+			double* pAMatrix;
+			double* pBMatrix;
+			double* pCMatrix;
+			int Length;
+			double* pAline;
+			double* pBline;
+			double* pCline;
+			
+			double Start, Finish, Duration;
+
+			Coords = ProcRank;
+			if (Size % ProcNum != 0) {
+				if (ProcRank == 0) {
+					std::cout << "\n Invalid number of proesses for multiplication of matrices of these Sizes";
+				}
+				return;
+			}
+			ProcessInitialization(pAMatrix, pBMatrix, pCMatrix, pAline, pBline, pCline, Size, Length);
+			MPI_Comm_split(MPI_COMM_WORLD, ProcRank / Length, ProcRank, &RowComm);
+			MPI_Comm_split(MPI_COMM_WORLD, ProcRank / Length, ProcRank, &ColComm);
+
+			Start = MPI_Wtime();
+			DataDistribution(pAMatrix, pBMatrix, pAline, pBline, Size, Length);
+			ComputeLine(pAline, pBline, pCline, Length, Size);
+			Finish = MPI_Wtime();
+			ResultCollection(pCMatrix, pCline, Length, Size);
+			Deconstruct(pAMatrix, pBMatrix, pCMatrix, pAline, pBline, pCline);
+			Duration = Finish - Start;
+			if (ProcRank == 0) {
+				std::cout << "Block-Striped " << Duration << std::endl;
+			}
+		}
+	}
+
 
 	namespace Fox {
 		int GridCoords[2];
@@ -63,36 +185,36 @@ namespace Multiplication {
 		}
 
 		void ResultCollection(double* pCMatrix, double* pCblock, int Size, int BlockSize, int GridCoords[]) {
-			double* res_row = new double[Size * BlockSize];
+			double* Result = new double[Size * BlockSize];
 			for (int i = 0; i < BlockSize; i++) {
-				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &res_row[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
+				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &Result[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
 			}
 			if (GridCoords[1] == 0) {
-				MPI_Gather(res_row, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
+				MPI_Gather(Result, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
 			}
-			delete[] res_row;
+			delete[] Result;
 		}
 		
 		void createGridCommunicators() {
-			int DimSize[2];
+			int SizeDim[2];
 			int Periodic[2];
-			int Subdims[2];
+			int SubDims[2];
 
-			DimSize[0] = GridSize;
-			DimSize[1] = GridSize;
+			SizeDim[0] = GridSize;
+			SizeDim[1] = GridSize;
 			Periodic[0] = 0;
 			Periodic[1] = 0;
 
-			MPI_Cart_create(MPI_COMM_WORLD, 2, DimSize, Periodic, 1, &GridComm);
+			MPI_Cart_create(MPI_COMM_WORLD, 2, SizeDim, Periodic, 1, &GridComm);
 			MPI_Cart_coords(GridComm, ProcRank, 2, GridCoords);
 
-			Subdims[0] = 0;
-			Subdims[1] = 1;
-			MPI_Cart_sub(GridComm, Subdims, &RowComm);
+			SubDims[0] = 0;
+			SubDims[1] = 1;
+			MPI_Cart_sub(GridComm,SubDims, &RowComm);
 
-			Subdims[0] = 1;
-			Subdims[1] = 0;
-			MPI_Cart_sub(GridComm, Subdims, &ColComm);
+			SubDims[0] = 1;
+			SubDims[1] = 0;
+			MPI_Cart_sub(GridComm,SubDims, &ColComm);
 		}
 
 		void DataDistributionMatrices(double* matrix, double* matrixBlock, int Size, int BlockSize) {
@@ -155,11 +277,10 @@ namespace Multiplication {
 			}
 		}
 
-		void runFoxAlg(int argc, char* argv[], int dim) {
+		void runFoxAlg(int argc, char* argv[], int Size) {
 			double* pAMatrix; 
 			double* pBMatrix; 
 			double* pCMatrix; 
-			int Size; 
 			int BlockSize;
 			double* pAblock; 
 			double* pBblock; 
@@ -174,12 +295,10 @@ namespace Multiplication {
 				}
 				return;
 			}
-			Size = dim;
+			
 			createGridCommunicators();
-			ProcessInitialization( pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock,
-				pCblock, pMatrixAblock, Size, BlockSize);
-			DataDistribution(pAMatrix, pBMatrix, pMatrixAblock, pBblock, Size,
-				BlockSize);
+			ProcessInitialization( pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock,pCblock, pMatrixAblock, Size, BlockSize);
+			DataDistribution(pAMatrix, pBMatrix, pMatrixAblock, pBblock, Size,BlockSize);
 
 			Start = MPI_Wtime();
 			ParallelResultCalculation(pAblock, pMatrixAblock, pBblock,
@@ -190,7 +309,7 @@ namespace Multiplication {
 
 			Duration = Finish - Start;
 			if (ProcRank == 0)
-				std::cout << "Fox (Size " << Size << "x" << Size << " ): " << Duration << std::endl;
+				std::cout << "Fox " << Duration << std::endl;
 		}
 	}
 
@@ -233,20 +352,20 @@ namespace Multiplication {
 		}
 
 		void ResultCollection(double* pCMatrix, double* pCblock, int Size, int BlockSize, int GridCoords[]) {
-			double* res_row = new double[Size * BlockSize];
+			double* Result = new double[Size * BlockSize];
 			for (int i = 0; i < BlockSize; i++) {
-				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &res_row[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
+				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &Result[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
 			}
 			if (GridCoords[1] == 0) {
-				MPI_Gather(res_row, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
+				MPI_Gather(Result, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
 			}
-			delete[] res_row;
+			delete[] Result;
 		}
 
 		void createGridCommunicators() {
 			int DimSize[2];
 			int Periodic[2];
-			int Subdims[2];
+			int SubDims[2];
 
 			DimSize[0] = GridSize;
 			DimSize[1] = GridSize;
@@ -256,13 +375,13 @@ namespace Multiplication {
 			MPI_Cart_create(MPI_COMM_WORLD, 2, DimSize, Periodic, 1, &GridComm);
 			MPI_Cart_coords(GridComm, ProcRank, 2, GridCoords);
 
-			Subdims[0] = 0;
-			Subdims[1] = 1;
-			MPI_Cart_sub(GridComm, Subdims, &RowComm);
+			SubDims[0] = 0;
+			SubDims[1] = 1;
+			MPI_Cart_sub(GridComm,SubDims, &RowComm);
 
-			Subdims[0] = 1;
-			Subdims[1] = 0;
-			MPI_Cart_sub(GridComm, Subdims, &ColComm);
+			SubDims[0] = 1;
+			SubDims[1] = 0;
+			MPI_Cart_sub(GridComm,SubDims, &ColComm);
 		}
 
 		void ABlockCommunication(double* pAMatrix, int Size, int BlockSize) {
@@ -303,11 +422,10 @@ namespace Multiplication {
 			DataDistributionBlock(pBMatrix, pBblock, (GridCoords[0] + GridCoords[1]) % GridSize, GridCoords[1], Size, BlockSize);
 		}
 
-		void runCannonAlg(int argc, char* argv[], int dim) {
+		void runCannonAlg(int argc, char* argv[], int Size) {
 			double* pAMatrix;
 			double* pBMatrix;
 			double* pCMatrix;
-			int Size;
 			int BlockSize;
 			double* pAblock;
 			double* pBblock;
@@ -322,12 +440,10 @@ namespace Multiplication {
 				}
 				return;
 			}
-			Size = dim;
+		
 			createGridCommunicators();
-			ProcessInitialization( pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock,
-				pCblock, Size, BlockSize);
-			DataDistribution(pAMatrix, pBMatrix, pAblock, pBblock, Size,
-				BlockSize);
+			ProcessInitialization( pAMatrix, pBMatrix, pCMatrix, pAblock, pBblock,pCblock, Size, BlockSize);
+			DataDistribution(pAMatrix, pBMatrix, pAblock, pBblock, Size, BlockSize);
 
 			Start = MPI_Wtime();
 			ParallelResultCalculation(pAblock, pBblock, pCblock, Size, BlockSize);
@@ -337,14 +453,15 @@ namespace Multiplication {
 
 			Duration = Finish - Start;
 			if (ProcRank == 0)
-				std::cout << "Cannon (Size " << Size << "x" << Size << " ): " << Duration << std::endl;
+				std::cout << "Cannon " << Duration << std::endl;
 		}
 	}
 
-	void runTest(int argc, char* argv[], int dim) {
-	
-		Fox::runFoxAlg(argc, argv, dim);
-		Cannon::runCannonAlg(argc, argv, dim);
+	void runTest(int argc, char* argv[], int Size) {
+		std::cout  << Size << "x" << Size << std::endl;
+		Fox::runFoxAlg(argc, argv, Size);
+		Cannon::runCannonAlg(argc, argv, Size);
+		BlockStriped::runBlockStripedAlg(argc, argv, Size);
 	}
 };
 
