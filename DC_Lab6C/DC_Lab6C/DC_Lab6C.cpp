@@ -9,23 +9,36 @@ int main(int argc, char* argv[])
 	setvbuf(stdout, 0, _IONBF, 0);
 	MPI_Init(&argc, &argv);
 
-	for (int i = 1; i <= 3; i++) {
-
-		ProcRank = i*i;
-		std::cout << std::endl;
-		std::cout << "ProcRank = "<< ProcRank << std::endl;
-
-		MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
-		MPI_Comm_size(MPI_COMM_WORLD, &ProcNum);
-
-		Multiplication::runTest(argc, argv, 500);
-		Multiplication::runTest(argc, argv, 1000);
-		Multiplication::runTest(argc, argv, 1500);
-		Multiplication::runTest(argc, argv, 2000);
-		Multiplication::runTest(argc, argv, 2500);
-		Multiplication::runTest(argc, argv, 3000);
+	MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
+	MPI_Comm_size(MPI_COMM_WORLD, &ProcNum);
+	switch (ProcNum) {
+	case 1:
 		
+		Multiplication::runTest(argc, argv, 150);
+		Multiplication::runTest(argc, argv, 300);
+		Multiplication::runTest(argc, argv, 600);
+		Multiplication::runTest(argc, argv, 1200);
+		break;
+
+	case 4:
+		
+		Multiplication::runTest(argc, argv, 144);
+		Multiplication::runTest(argc, argv, 288);
+		Multiplication::runTest(argc, argv, 576);
+		Multiplication::runTest(argc, argv, 1152);
+		break;
+	
+	case 9:
+		Multiplication::runTest(argc, argv, 162);
+		Multiplication::runTest(argc, argv, 324);
+		Multiplication::runTest(argc, argv, 648);
+		Multiplication::runTest(argc, argv, 1296);
+		break;
+
+	default:
+		std::cout << "\n Invalid number of processes!";
 	}
+		
 	MPI_Finalize();
 	return 0;
 }

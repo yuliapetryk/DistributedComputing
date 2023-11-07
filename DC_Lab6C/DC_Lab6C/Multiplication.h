@@ -162,7 +162,6 @@ namespace Multiplication {
 		}
 	}
 
-
 	namespace Fox {
 		int GridCoords[2];
 		int GridSize;
@@ -170,30 +169,6 @@ namespace Multiplication {
 	    MPI_Comm ColComm;
 		MPI_Comm RowComm;
 
-		void Deconstruct(double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double* pAblock, double* pBblock, double* pCblock, double* pTemporaryAblock = NULL) {
-			if (ProcRank == 0) {
-				delete[] pAMatrix;
-				delete[] pBMatrix;
-				delete[] pCMatrix;
-			}
-			delete[] pAblock;
-			delete[] pBblock;
-			delete[] pCblock;
-			if (!pTemporaryAblock) {
-				delete[] pTemporaryAblock;
-			}
-		}
-
-		void ResultCollection(double* pCMatrix, double* pCblock, int Size, int BlockSize, int GridCoords[]) {
-			double* Result = new double[Size * BlockSize];
-			for (int i = 0; i < BlockSize; i++) {
-				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &Result[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
-			}
-			if (GridCoords[1] == 0) {
-				MPI_Gather(Result, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
-			}
-			delete[] Result;
-		}
 		
 		void createGridCommunicators() {
 			int SizeDim[2];
@@ -215,6 +190,23 @@ namespace Multiplication {
 			SubDims[0] = 1;
 			SubDims[1] = 0;
 			MPI_Cart_sub(GridComm,SubDims, &ColComm);
+		}
+
+		void ProcessInitialization(double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double*& pAblock, double*& pBblock, double*& pCblock, double*& pTemporaryAblock, int& Size, int& BlockSize) {
+			BlockSize = Size / GridSize;
+
+			pAblock = new double[BlockSize * BlockSize];
+			pBblock = new double[BlockSize * BlockSize];
+			pCblock = new double[BlockSize * BlockSize];
+			pTemporaryAblock = new double[BlockSize * BlockSize];
+
+			if (ProcRank == 0) {
+				pAMatrix = new double[Size * Size];
+				pBMatrix = new double[Size * Size];
+				pCMatrix = new double[Size * Size];
+				pAMatrix = General::RandomDataInitialization(Size);
+				pBMatrix = General::RandomDataInitialization(Size);
+			}
 		}
 
 		void DataDistributionMatrices(double* matrix, double* matrixBlock, int Size, int BlockSize) {
@@ -260,20 +252,28 @@ namespace Multiplication {
 			}
 		}
 
-		void ProcessInitialization(double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double*& pAblock, double*& pBblock, double*& pCblock, double*& pTemporaryAblock, int& Size, int& BlockSize) {
-			BlockSize = Size / GridSize;
+		void ResultCollection(double* pCMatrix, double* pCblock, int Size, int BlockSize, int GridCoords[]) {
+			double* Result = new double[Size * BlockSize];
+			for (int i = 0; i < BlockSize; i++) {
+				MPI_Gather(&pCblock[i * BlockSize], BlockSize, MPI_DOUBLE, &Result[i * Size], BlockSize, MPI_DOUBLE, 0, RowComm);
+			}
+			if (GridCoords[1] == 0) {
+				MPI_Gather(Result, BlockSize * Size, MPI_DOUBLE, pCMatrix, BlockSize * Size, MPI_DOUBLE, 0, ColComm);
+			}
+			delete[] Result;
+		}
 
-			pAblock = new double[BlockSize * BlockSize];
-			pBblock = new double[BlockSize * BlockSize];
-			pCblock = new double[BlockSize * BlockSize];
-			pTemporaryAblock = new double[BlockSize * BlockSize];
-
+		void Deconstruct(double*& pAMatrix, double*& pBMatrix, double*& pCMatrix, double* pAblock, double* pBblock, double* pCblock, double* pTemporaryAblock = NULL) {
 			if (ProcRank == 0) {
-				pAMatrix = new double[Size * Size];
-				pBMatrix = new double[Size * Size];
-				pCMatrix = new double[Size * Size];
-				pAMatrix = General::RandomDataInitialization(Size);
-				pBMatrix = General::RandomDataInitialization(Size);
+				delete[] pAMatrix;
+				delete[] pBMatrix;
+				delete[] pCMatrix;
+			}
+			delete[] pAblock;
+			delete[] pBblock;
+			delete[] pCblock;
+			if (!pTemporaryAblock) {
+				delete[] pTemporaryAblock;
 			}
 		}
 
@@ -458,7 +458,7 @@ namespace Multiplication {
 	}
 
 	void runTest(int argc, char* argv[], int Size) {
-		std::cout  << Size << "x" << Size << std::endl;
+		
 		Fox::runFoxAlg(argc, argv, Size);
 		Cannon::runCannonAlg(argc, argv, Size);
 		BlockStriped::runBlockStripedAlg(argc, argv, Size);
