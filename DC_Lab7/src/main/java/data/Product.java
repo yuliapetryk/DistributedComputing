@@ -1,10 +1,14 @@
 package data;
 
 public class Product {
-    private int code;
+    private final int code;
+
     private String name;
+
     private Section section;
+
     private int price;
+
     public Product(int code, String name, Section section, int price){
         this.code = code;
         this.name = name;
@@ -39,5 +43,4 @@ public class Product {
     public void setProductPrice(int price) {
         this.price = price;
     }
-
 }

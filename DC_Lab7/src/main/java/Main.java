@@ -1,12 +1,13 @@
-import data.Product;
+
 import data.Shop;
+import org.xml.sax.SAXException;
 import parser.Parser;
 
 import javax.xml.transform.TransformerException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws TransformerException {
+    public static void main(String[] args) throws TransformerException, SAXException {
         Parser parser = new Parser();
         Shop shop = new Shop();
         shop = parser.readFromFile();

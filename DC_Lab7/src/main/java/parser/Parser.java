@@ -10,6 +10,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXParseException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -25,13 +26,18 @@ import javax.xml.validation.SchemaFactory;
 public class Parser {
     private static DocumentBuilder db = null;
 
-    private static String filePath= "data.xml";
+    private static String filePath = "data.xml";
 
-    public Shop readFromFile() {
+    public Shop readFromFile() throws SAXException {
         Shop shop = new Shop();
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setValidating(true);
+        SchemaFactory sf =
+                SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        Schema s = sf.newSchema(new File("data.xsd"));
+        dbf = DocumentBuilderFactory.newInstance();
+        dbf.setValidating(false);
+        dbf.setSchema(s);
 
         try {
             db = dbf.newDocumentBuilder();
@@ -76,28 +82,29 @@ public class Parser {
                     shop.addProduct(product);
 
                 }
-
             }
         }
         return shop;
     }
 
-
     public static class SimpleErrorHandler implements ErrorHandler {
-        public void warning(SAXParseException exception) {
-            System.out.println("Warning: " + exception.getLineNumber());
-            System.out.println(exception.getMessage());
+
+        public void warning(SAXParseException e) throws SAXException {
+            System.out.println("Row" + e.getLineNumber() + ":");
+            System.out.println(e.getMessage());
         }
 
-        public void error(SAXParseException exception) {
-            System.out.println("Error: " + exception.getLineNumber());
-            System.out.println(exception.getMessage());
+
+        public void error(SAXParseException e) throws SAXException {
+            System.out.println("Row" + e.getLineNumber() + ":");
+            System.out.println(e.getMessage());
         }
 
-        public void fatalError(SAXParseException exception) throws SAXException {
-            System.out.println("Fatal error: " + exception.getLineNumber());
-            System.out.println(exception.getMessage());
+        public void fatalError(SAXParseException e) throws SAXException {
+            System.out.println("Row" + e.getLineNumber() + ":");
+            System.out.println(e.getMessage());
         }
+
     }
 
     public static void saveToFile(Shop shop) throws TransformerException {
