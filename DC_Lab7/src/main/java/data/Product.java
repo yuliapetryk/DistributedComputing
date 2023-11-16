@@ -4,10 +4,12 @@ public class Product {
     public int code;
     public String name;
     public Section section;
-    public Product(int code, String name, Section section){
+    public int price;
+    public Product(int code, String name, Section section, int price){
         this.code = code;
         this.name = name;
         this.section = section;
+        this.price = price;
     }
 
     public String getProductName() {
@@ -28,6 +30,10 @@ public class Product {
 
     public void setProductSection(Section section) {
         this.section = section;
+    }
+
+    public void setProductPrice(int price) {
+        this.price = price;
     }
 
 }
