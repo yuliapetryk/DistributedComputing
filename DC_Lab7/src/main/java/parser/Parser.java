@@ -44,7 +44,7 @@ public class Parser {
 
         Element root = doc.getDocumentElement();
         if (root.getTagName().equals("Shop")) {
-            System.out.println("here");
+           
             NodeList listSections = root.getElementsByTagName("Section");
 
             for (int i = 0; i < listSections.getLength(); i++) {
@@ -54,7 +54,7 @@ public class Parser {
                 String sectionName = sectionElement.getAttribute("name");
 
                 Section section = new Section(sectionCode, sectionName);
-
+                shop.addSection(section);
                 NodeList listProducts = sectionElement.getElementsByTagName("Product");
 
                 for (int j = 0; j < listProducts.getLength(); j++) {
@@ -69,7 +69,7 @@ public class Parser {
                     shop.addProduct(product);
 
                 }
-                shop.addSection(section);
+
             }
         }
         return shop;
