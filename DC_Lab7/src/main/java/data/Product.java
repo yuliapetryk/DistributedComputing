@@ -1,10 +1,10 @@
 package data;
 
 public class Product {
-    public int code;
-    public String name;
-    public Section section;
-    public int price;
+    private int code;
+    private String name;
+    private Section section;
+    private int price;
     public Product(int code, String name, Section section, int price){
         this.code = code;
         this.name = name;
@@ -18,6 +18,10 @@ public class Product {
 
     public Integer getProductCode(){
         return this.code;
+    }
+
+    public Integer getProductPrice(){
+        return this.price;
     }
 
     public Integer getSectionProductCode(){
