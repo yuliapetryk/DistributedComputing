@@ -44,7 +44,7 @@ public class Parser {
 
         Element root = doc.getDocumentElement();
         if (root.getTagName().equals("Shop")) {
-           
+
             NodeList listSections = root.getElementsByTagName("Section");
 
             for (int i = 0; i < listSections.getLength(); i++) {
