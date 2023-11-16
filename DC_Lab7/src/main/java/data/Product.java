@@ -22,4 +22,12 @@ public class Product {
         return this.section.getSectionCode();
     }
 
+    public void setProductName(String name) {
+        this.name = name;
+    }
+
+    public void setProductSection(Section section) {
+        this.section = section;
+    }
+
 }

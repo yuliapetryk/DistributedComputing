@@ -8,6 +8,7 @@ public class Section {
         this.name = name;
     }
 
+
     public String getSectionName() {
             return this.name;
     }
