@@ -1,28 +1,37 @@
 package parser;
+import data.Product;
+import data.Section;
 import data.Shop;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.xml.sax.SAXParseException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 public class Parser {
 
-    public void readFromFile() {
-
+    public Shop readFromFile() {
+        Shop shop = new Shop();
         DocumentBuilder db = null;
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setValidating(true);
+
         try {
             db = dbf.newDocumentBuilder();
+            db.setErrorHandler(new SimpleErrorHandler());
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         }
-
         Document doc = null;
 
         try {
@@ -32,6 +41,7 @@ public class Parser {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         Element root = doc.getDocumentElement();
         if (root.getTagName().equals("Shop")) {
             System.out.println("here");
@@ -39,22 +49,48 @@ public class Parser {
 
             for (int i = 0; i < listSections.getLength(); i++) {
 
-                Element section = (Element) listSections.item(i);
-                String sectionCode = section.getAttribute("code");
-                String sectionName = section.getAttribute("name");
+                Element sectionElement = (Element) listSections.item(i);
+                int sectionCode = Integer.parseInt(sectionElement.getAttribute("code"));
+                String sectionName = sectionElement.getAttribute("name");
 
-                System.out.println(sectionCode + "\t" + sectionName + ":");
+                Section section = new Section(sectionCode, sectionName);
 
-                NodeList listProducts = section.getElementsByTagName("Product");
+                NodeList listProducts = sectionElement.getElementsByTagName("Product");
 
                 for (int j = 0; j < listProducts.getLength(); j++) {
 
-                    Element product = (Element) listProducts.item(j);
-                    String productName = product.getAttribute("name");
-                    System.out.println("" + productName);
+                    Element productElement = (Element) listProducts.item(j);
+                    Product product = new Product(
+                            Integer.parseInt(productElement.getAttribute("code")),
+                            productElement.getAttribute("name"),
+                            section,
+                            Integer.parseInt(productElement.getAttribute("price"))
+                    );
+                    shop.addProduct(product);
+
                 }
+                shop.addSection(section);
             }
         }
+        return shop;
     }
 
+
+    public static class SimpleErrorHandler implements ErrorHandler {
+        public void warning(SAXParseException exception) {
+            System.out.println("Warning: " + exception.getLineNumber());
+            System.out.println(exception.getMessage());
+        }
+
+        public void error(SAXParseException exception) {
+            System.out.println("Error: " + exception.getLineNumber());
+            System.out.println(exception.getMessage());
+        }
+
+        public void fatalError(SAXParseException exception) throws SAXException {
+            System.out.println("Fatal error: " + exception.getLineNumber());
+            System.out.println(exception.getMessage());
+        }
+    }
 }
+
