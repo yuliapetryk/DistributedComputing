@@ -1,14 +1,1 @@
-ï»¿<?xml version="1.0" encoding="utf-8"?>
-
-<Shop>
-	<Section code="1" name="Ð¡lothes">
-		<Product code="1" name="dress" price="1200"/>
-		<Product code="2" name="skirt" price="1000"/>
-		<Product code="3" name="t-shirt" price="600"/>
-	</Section>
-	<Section code="2" name="Ð¡hancery">
-		<Product code="4" name="pen" price="12"/>
-		<Product code="5" name="pencil" price="10"/>
-		<Product code="6" name="notebook" price="60"/>
-	</Section>
-</Shop>
+<?xml version="1.0" encoding="Windows-1251" standalone="no"?><Shop><Section code="1" name="Ñlothes"><Product code="1" name="dress" price="1200"/><Product code="2" name="skirt" price="1000"/><Product code="3" name="t-shirt" price="600"/></Section><Section code="2" name="Ñhancery"><Product code="4" name="pen" price="12"/><Product code="5" name="pencil" price="10"/><Product code="6" name="notebook" price="60"/></Section><Section code="3" name="accessories"><Product code="8" name="hat" price="400"/></Section></Shop>

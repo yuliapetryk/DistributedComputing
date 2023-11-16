@@ -15,14 +15,21 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 public class Parser {
+    private static DocumentBuilder db = null;
+
+    private static String filePath= "data.xml";
 
     public Shop readFromFile() {
         Shop shop = new Shop();
-        DocumentBuilder db = null;
+
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(true);
 
@@ -35,7 +42,7 @@ public class Parser {
         Document doc = null;
 
         try {
-            doc = db.parse(new File("data.xml"));
+            doc = db.parse(new File(filePath));
         } catch (SAXException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -92,5 +99,35 @@ public class Parser {
             System.out.println(exception.getMessage());
         }
     }
+
+    public static void saveToFile(Shop shop) throws TransformerException {
+        Document doc = db.newDocument();
+        Element root = doc.createElement("Shop");
+        doc.appendChild(root);
+
+        for (Section section : shop.getSections()) {
+            Element productSection = doc.createElement("Section");
+            productSection.setAttribute("code", String.valueOf(section.getSectionCode()));
+            productSection.setAttribute("name", section.getSectionName());
+            root.appendChild(productSection);
+
+            for (Product product : shop.getProducts()) {
+                if(Objects.equals(product.getSectionProductCode(), section.getSectionCode())) {
+                    Element productElement = doc.createElement("Product");
+                    productElement.setAttribute("code", String.valueOf(product.getProductCode()));
+                    productElement.setAttribute("name", product.getProductName());
+                    productElement.setAttribute("price", String.valueOf(product.getProductPrice()));
+                    productSection.appendChild(productElement);
+                }
+            }
+        }
+        Source domSource = new DOMSource(doc);
+        Result fileResult = new StreamResult(new File(filePath));
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.ENCODING, "Windows-1251");
+        transformer.transform(domSource, fileResult);
+    }
+
 }
 
