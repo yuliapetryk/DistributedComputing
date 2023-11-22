@@ -5,10 +5,17 @@ import java.util.Objects;
 
 public class Shop {
 
-    private ArrayList<Section> sections;
+    private ArrayList<Section> sections = new ArrayList<>();
 
-    private ArrayList<Product> products;
+    private ArrayList<Product> products = new ArrayList<>();
 
+    public ArrayList<Section> getSections(){
+        return sections;
+    }
+
+    public ArrayList<Product> getProducts(){
+        return products;
+    }
 
     public void addSection(int code, String name) {
         for (Section section : this.sections) {
@@ -18,6 +25,16 @@ public class Shop {
             }
         }
         this.sections.add(new Section(code, name));
+    }
+
+    public void addSection(Section section) {
+        for (Section s : this.sections) {
+            if (s.getSectionCode() == section.getSectionCode() || s.getSectionName().equals(section.getSectionName())) {
+                System.out.println("Section already exists");
+                return;
+            }
+        }
+        this.sections.add(new Section(section.getSectionCode(), section.getSectionName()));
     }
 
     public void addProduct(int code, String name, int sectionCode, int price) {
@@ -30,6 +47,23 @@ public class Shop {
         for (Section section : this.sections) {
             if (section.getSectionCode() == sectionCode) {
                 this.products.add(new Product(code, name, section, price));
+                return;
+            }
+        }
+        System.out.println("Section with this code does not exist");
+
+    }
+
+    public void addProduct(Product product) {
+        for (Product p : this.products) {
+            if (p.getProductCode() == product.getProductCode() || p.getProductName().equals(product.getProductName())) {
+                System.out.println("Product already exists");
+                return;
+            }
+        }
+        for (Section section : this.sections) {
+            if (section.getSectionCode() == product.getSectionProductCode()) {
+                this.products.add(new Product(product.getProductCode(),product.getProductName(), section, product.getProductPrice()));
                 return;
             }
         }
@@ -178,5 +212,18 @@ public class Shop {
             }
         }
         System.out.println("Product with this code does not exist");
+    }
+
+    public void showAllSections() {
+        for (Section section : this.sections) {
+            System.out.println(section.getSectionName());
+        }
+    }
+
+    public void showAllProductsInSection(int code) {
+        for (Product product : this.products){
+            if(Objects.equals(product.getSectionProductCode(), code)){
+                System.out.println(product.getProductName());}
+        }
     }
 }
