@@ -1,6 +1,8 @@
 package Data;
 
-public class Product {
+import java.io.Serializable;
+
+public class Product implements Serializable {
     private final int code;
 
     private String name;
