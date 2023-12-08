@@ -18,9 +18,9 @@ public class Client {
             String url = "//localhost:123/Shop";
             shop = (ShopServer) Naming.lookup(url);
             System.out.println("Connected to the Shop service.");
-            addSection("10","Perfume");
-            addProduct("33","Dior","10","12000");
-            System.out.println(showSections());
+           // addSection("10","Perfume");
+            //addProduct("33","Dior","10","12000");
+            System.out.println(showProductInSection("1"));
             System.out.println(getProductByName("DRESS"));
     }
 

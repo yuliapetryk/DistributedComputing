@@ -24,7 +24,9 @@ public class Send {
             connection = factory.newConnection();
             channel = connection.createChannel();
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            showSections();
+            //TODO create scenario
+            //showSections();
+            showProductInSection("1");
 
         } catch (IOException | TimeoutException e) {
                 throw new RuntimeException(e);
