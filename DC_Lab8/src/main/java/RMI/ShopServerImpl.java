@@ -4,20 +4,16 @@ import Data.Product;
 import Data.Section;
 import Database.DatabaseService;
 
-import javax.management.remote.rmi.RMIConnection;
-import javax.management.remote.rmi.RMIServer;
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class RMIServerImpl extends UnicastRemoteObject implements ShopServer{
+public class ShopServerImpl extends UnicastRemoteObject implements ShopServer{
     private static DatabaseService service;
 
-    public RMIServerImpl() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, RemoteException {
-        super();
-        DatabaseService service = new DatabaseService("jdbc:mysql://localhost:3306/shop", "root", "06102003");
+    public ShopServerImpl() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, RemoteException {
+         service = new DatabaseService("jdbc:mysql://localhost:3306/shop", "root", "06102003");
     }
 
     @Override
@@ -56,22 +52,18 @@ public class RMIServerImpl extends UnicastRemoteObject implements ShopServer{
     }
 
     @Override
-    public Product showProductCountInSection(String name) throws RemoteException {
-        return null;
+    public Product getProductByName(String name) throws RemoteException {
+        return service.getProductByName(name);
     }
 
     @Override
     public ArrayList<Product> showProductInSection(int id) throws RemoteException {
-        return null;
+        return service.showProductInSection(id);
     }
 
     @Override
     public ArrayList<Section> showSections() throws RemoteException {
-        return null;
+        return service.showSections();
     }
 
-    @Override
-    public void stop() throws RemoteException {
-
-    }
 }

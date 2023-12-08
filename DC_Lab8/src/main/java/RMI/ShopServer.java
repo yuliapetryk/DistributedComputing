@@ -22,12 +22,11 @@ public interface ShopServer extends Remote {
 
     public int showProductCountInSection(int id) throws RemoteException;
 
-    public Product showProductCountInSection(String name) throws RemoteException;
+    public Product getProductByName(String name) throws RemoteException;
 
     public ArrayList<Product> showProductInSection(int id) throws RemoteException;
 
     public ArrayList<Section> showSections() throws RemoteException;
 
-    public void stop() throws RemoteException;
 }
 
