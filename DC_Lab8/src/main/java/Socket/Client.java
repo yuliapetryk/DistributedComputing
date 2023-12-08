@@ -21,6 +21,7 @@ public class Client {
     public static void main(String[] args) {
         try {
             Client client = new Client("localhost", 12345);
+            //TODO create a scenario
             showSections();
             readResponse();
             getProductByName("DRESS");
@@ -28,7 +29,7 @@ public class Client {
             stop();
             client.disconnect();
         } catch (IOException e) {
-            System.out.println("Error");
+            System.out.println("CLIENT: Error");
             e.printStackTrace();
         }
     }

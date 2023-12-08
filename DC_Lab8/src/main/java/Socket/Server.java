@@ -38,7 +38,7 @@ public class Server {
     }
 
     public static boolean processQuery() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        DatabaseService service = new DatabaseService("jdbc:mysql://localhost:3306/shop", "root", "06102003");
+        ServerService service = new ServerService();
         try {
             String query = in.readLine();
             String[] parameters = query.split("#");
