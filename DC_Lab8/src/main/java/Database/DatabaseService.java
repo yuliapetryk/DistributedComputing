@@ -36,17 +36,19 @@ public class DatabaseService {
     }
 
     public ArrayList<Product> showProductInSection(int code) {
-        String sql = "SELECT ID_P, NAME FROM PRODUCTS WHERE ID_S = " + code;
+        String sql = "SELECT ID_P, NAME, PRICE FROM PRODUCTS WHERE ID_S = " + code;
         try {
             ResultSet rs = statement.executeQuery(sql);
             ArrayList<Product> products = new ArrayList<Product>();
             while (rs.next()) {
-                products.add(new Product(rs.getInt("ID_P"), rs.getString("NAME"), rs.getInt("ID_S"), rs.getInt("PRICE")));
+                products.add(new Product(rs.getInt("ID_P"), rs.getString("NAME"), code, rs.getInt("PRICE")));
             }
             rs.close();
+
             return products;
         } catch (SQLException e) {
             throw new RuntimeException(e);
+
         }
     }
 
