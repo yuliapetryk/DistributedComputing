@@ -1,6 +1,7 @@
 package Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class Product implements Serializable {
     private final int code;
@@ -44,5 +45,16 @@ public class Product implements Serializable {
 
     public void setProductPrice(int price) {
         this.price = price;
+    }
+
+    public static String printProduct(ArrayList<Product> products){
+        StringBuilder result = new StringBuilder();
+        for (Product product :products){
+            result.append(">>").append(product.getProductCode()).append("\n")
+                    .append("Name: ").append(product.getProductName()).append("\n")
+                    .append("Section: ").append(product.getSectionProductCode()).append("\n")
+                    .append("Price: ").append(product.getProductPrice()).append("\n");
+        }
+        return result.toString();
     }
 }

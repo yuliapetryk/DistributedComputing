@@ -8,6 +8,8 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
 
+import static Data.Product.printProduct;
+import static Data.Section.printSection;
 
 public class Client {
     private static ShopServer shop;
@@ -74,24 +76,6 @@ public class Client {
         result.append(printSection(shop.showSections()));
         return result.toString();
     }
-    private static String printSection(ArrayList<Section> sections ){
-        StringBuilder result = new StringBuilder();
-        for (Section section :sections){
-            result.append(">>").append(section.getSectionCode())
-                    .append("-").append(section.getSectionName()).append("\n");
-        }
-        return result.toString();
-    }
 
-    private static String printProduct(ArrayList<Product> products ){
-        StringBuilder result = new StringBuilder();
-        for (Product product :products){
-            result.append(">>").append(product.getProductCode()).append("\n")
-                    .append("Name: ").append(product.getProductName()).append("\n")
-                    .append("Section: ").append(product.getSectionProductCode()).append("\n")
-                    .append("Price: ").append(product.getProductPrice()).append("\n");
-        }
-        return result.toString();
-    }
 
 }
