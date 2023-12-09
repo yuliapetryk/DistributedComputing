@@ -21,11 +21,18 @@ public class Client {
     public static void main(String[] args) {
         try {
             Client client = new Client("localhost", 12345);
-            //TODO create a scenario
             showSections();
             readResponse();
+
             getProductByName("DRESS");
             readResponse();
+
+            addProduct("44","Sandwich","55", "2");
+            readResponse();
+
+            showProductInSection("2");
+            readResponse();
+
             stop();
             client.disconnect();
         } catch (IOException e) {
@@ -99,5 +106,4 @@ public class Client {
     public void disconnect() throws IOException {
         sock.close();
     }
-
 }

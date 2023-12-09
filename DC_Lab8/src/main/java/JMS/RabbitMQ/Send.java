@@ -23,10 +23,11 @@ public class Send {
             connection = factory.newConnection();
             channel = connection.createChannel();
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            //TODO create scenario
-            // TODO added second queue
             showSections();
-            showProductInSection("1");
+            addSection("16", "Household chemicals");
+            addProduct("77", "Soap", "34", "16");
+            showProductInSection("16");
+
 
         } catch (IOException | TimeoutException e) {
                 throw new RuntimeException(e);
@@ -45,7 +46,6 @@ public class Send {
             request.append(arg).append("#");
         }
         System.out.println(call(request.toString()));
-        //channel.basicPublish("", QUEUE_NAME, null, request.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     public static void addSection(String id, String name) throws IOException, ExecutionException, InterruptedException {

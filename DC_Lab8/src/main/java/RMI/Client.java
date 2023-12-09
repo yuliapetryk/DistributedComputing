@@ -14,14 +14,14 @@ import static Data.Section.printSection;
 public class Client {
     private static ShopServer shop;
     public static void main(String[] args) throws IOException, NotBoundException {
-           //TODO create scenario
             String url = "//localhost:123/Shop";
             shop = (ShopServer) Naming.lookup(url);
             System.out.println("Connected to the Shop service.");
-           // addSection("10","Perfume");
-            //addProduct("33","Dior","10","12000");
-            System.out.println(showProductInSection("1"));
-            System.out.println(getProductByName("DRESS"));
+            System.out.println(showSections());
+            addSection("11","Sport");
+            addProduct("35","Ball","11","500");
+            System.out.println(showProductInSection("11"));
+            System.out.println(getProductByName("Ball"));
     }
 
     public static void addSection(String id, String name) throws IOException {
