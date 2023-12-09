@@ -6,7 +6,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +24,8 @@ public class Send {
             channel = connection.createChannel();
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
             //TODO create scenario
-            //showSections();
+            // TODO added second queue
+            showSections();
             showProductInSection("1");
 
         } catch (IOException | TimeoutException e) {
@@ -39,31 +39,58 @@ public class Send {
             }
     }
 
-    private static void sendRequest(String... requests) throws IOException {
+    private static void sendRequest(String... requests) throws IOException, ExecutionException, InterruptedException {
         StringBuilder request = new StringBuilder();
         for (String arg : requests) {
             request.append(arg).append("#");
         }
-        channel.basicPublish("", QUEUE_NAME, null, request.toString().getBytes(StandardCharsets.UTF_8));
+        System.out.println(call(request.toString()));
+        //channel.basicPublish("", QUEUE_NAME, null, request.toString().getBytes(StandardCharsets.UTF_8));
     }
 
-    public static void addSection(String id, String name) throws IOException {
+    public static void addSection(String id, String name) throws IOException, ExecutionException, InterruptedException {
         sendRequest("1", id, name);
     }
 
-    public static void addProduct( String id, String name, String price, String section) throws IOException {
+    public static void addProduct( String id, String name, String price, String section) throws IOException, ExecutionException, InterruptedException {
         sendRequest("2", id, name, section, price);
     }
 
-    public static void deleteProduct(String id) throws IOException {
+    public static void deleteProduct(String id) throws IOException, ExecutionException, InterruptedException {
        sendRequest("3", id);
     }
 
-    public static void showProductInSection(String id) throws IOException {
+    public static void showProductInSection(String id) throws IOException, ExecutionException, InterruptedException {
         sendRequest("4", id);
     }
 
     public static void showSections() throws IOException, ExecutionException, InterruptedException {
         sendRequest("5");
     }
+    public static String call(String message) throws IOException, InterruptedException, ExecutionException {
+        final String corrId = UUID.randomUUID().toString();
+
+        String replyQueueName = channel.queueDeclare().getQueue();
+        AMQP.BasicProperties props = new AMQP.BasicProperties
+                .Builder()
+                .correlationId(corrId)
+                .replyTo(replyQueueName)
+                .build();
+
+        channel.basicPublish("", QUEUE_NAME, props, message.getBytes("UTF-8"));
+
+        final CompletableFuture<String> response = new CompletableFuture<>();
+
+        String ctag = channel.basicConsume(replyQueueName, true, (consumerTag, delivery) -> {
+            if (delivery.getProperties().getCorrelationId().equals(corrId)) {
+                response.complete(new String(delivery.getBody(), "UTF-8"));
+            }
+        }, consumerTag -> {
+        });
+
+        String result = response.get();
+        channel.basicCancel(ctag);
+        return result;
+    }
+
 }

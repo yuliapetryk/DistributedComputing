@@ -16,24 +16,40 @@ public class Recv {
 
     public static void main(String[] argv) throws Exception {
         service = new DatabaseService("jdbc:mysql://localhost:3306/shop", "root", "06102003");
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost("localhost");
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
 
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            channel.queuePurge(QUEUE_NAME);
 
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-            try {
-                System.out.println(processQuery(message));
-            } catch (SQLException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        };
-        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
-        };
+            channel.basicQos(1);
+
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                AMQP.BasicProperties replyProps = new AMQP.BasicProperties
+                        .Builder()
+                        .correlationId(delivery.getProperties().getCorrelationId())
+                        .build();
+                System.out.println("The server received the request\n");
+                String response = "";
+                try {
+                    String command = new String(delivery.getBody(), "UTF-8");
+                    response =  processQuery(command);
+                } catch (RuntimeException e) {
+                    System.out.println(" [.] " + e);
+                } catch (SQLException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    System.out.println("The server sent a response to the request\n");
+                    channel.basicPublish("", delivery.getProperties().getReplyTo(), replyProps, response.getBytes("UTF-8"));
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+                }
+            };
+
+            channel.basicConsume(QUEUE_NAME, false, deliverCallback, (consumerTag -> {}));
+        }
 
     public static String processQuery(String query) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         String[] parameters = query.split("#");
