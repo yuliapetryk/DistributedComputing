@@ -6,6 +6,7 @@ import tasks.data.Contacts;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.List;
 
 public class ManagerImp extends UnicastRemoteObject implements Manager {
 Contacts contacts;
@@ -14,13 +15,14 @@ Contacts contacts;
         contacts = new Contacts();
     }
     @Override
-    public  String findByName(String name) throws IOException {
-        return contacts.findByName(name).toString();
+    public  List<String> findByName(String name) throws IOException {
+        return contacts.findByName(name);
     }
 
     @Override
-    public String findByEmailAndPhone(String email, String phone) throws IOException {
-        contacts.findByEmailAndPhone(email,phone);
+    public List<String>  findByEmailAndPhone(String email, String phone) throws IOException {
+       return contacts.findByEmailAndPhone(email,phone);
+
     }
 
     @Override

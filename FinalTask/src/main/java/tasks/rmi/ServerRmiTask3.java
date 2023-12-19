@@ -10,7 +10,8 @@ public class ServerRmiTask3 {
     public static void main(String[] args) throws RemoteException, InterruptedException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException, AlreadyBoundException {
         final ManagerImp server = new ManagerImp();
         Registry registry = LocateRegistry.createRegistry(123);
-        registry.rebind("Manager", server);
+        String url = "Contacts";
+        registry.rebind(url, server);
         Thread.sleep(Integer.MAX_VALUE);
     }
 }

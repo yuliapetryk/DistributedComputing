@@ -44,10 +44,6 @@ public class ServerSocketTask3 {
     public static boolean processQuery() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Contacts contacts= new Contacts();
             contacts = new Contacts();
-            contacts.add(new Contact("Stepan", "Kysil", "123-456-7890"));
-            contacts.add(new EmailContact("Ivan", "Kysil", "123-456-7890", "kysil@gmail.com"));
-            contacts.add(new SocialMediaContact("Petro", "Kysil", "123-456-7123", "kysilpetro@gmail.com", "kysil123"));
-            contacts.add(new SocialMediaContact("Ivan", "Kysil", "123-456-7890", "kysil@gmail.com", "kysil456"));
 
             try {
             String query = in.readLine();

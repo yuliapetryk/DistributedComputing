@@ -1,34 +1,44 @@
 package tasks.rmi;
 
+import tasks.data.Contact;
+
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
+import java.util.List;
 
 public class ClientRmiTask3 {
     private static Manager manager;
-    public static void main(String[] args) throws IOException, NotBoundException {
-        String url = "//localhost:123/Shop";
+    public ClientRmiTask3 () throws IOException, NotBoundException {
+        String url = "//localhost:123/Contacts";
         manager = (Manager) Naming.lookup(url);
-        System.out.println("Connected to the Shop service.");
-
+        System.out.println("Connected to the service.");
     }
 
-    public static void findByName( String name) throws IOException {
-        manager.findByName(name);
-        StringBuilder result = new StringBuilder();
-
+    public static String findByName(String name) throws IOException {
+        StringBuilder result= new StringBuilder();
+        for (String res: manager.findByName(name) ){
+            result.append(res);
+        }
+        return result.toString();
     }
 
-    public static void findByEmailAndPhone(String email, String phone) throws IOException {
-        manager.findByEmailAndPhone(email,phone);
+    public static String  findByEmailAndPhone(String email, String phone) throws IOException {
+        StringBuilder result= new StringBuilder();
+        for (String res: manager.findByEmailAndPhone(email,phone)){
+            result.append(res);
+        }
+        return result.toString();
     }
 
-    public static void sortByName() throws IOException {
-        manager.sortByName();
+    public static String sortByName() throws IOException {
+        StringBuilder result= new StringBuilder();
+            result.append(manager.sortByName());
+        return result.toString();
     }
 
-    public static void mergeContacts(String index1, String index2) throws IOException {
-        manager.mergeContacts(index1, index2);
+    public static Contact mergeContacts(String index1, String index2) throws IOException {
+       return manager.mergeContacts(index1, index2);
     }
 
 }

@@ -5,8 +5,17 @@ import java.util.*;
 public class Contacts {
     private List<Contact> contacts;
 
+    public Contacts(String str) {
+        this.contacts = new ArrayList<>();
+    }
+
     public Contacts() {
         this.contacts = new ArrayList<>();
+        contacts.add(new Contact("Stepan", "Kysil", "123-456-7890"));
+        contacts.add(new EmailContact("Ivan", "Kysil", "123-456-7890", "kysil@gmail.com"));
+        contacts.add(new SocialMediaContact("Petro", "Kysil", "123-456-7123", "kysilpetro@gmail.com", "kysil123"));
+        contacts.add(new SocialMediaContact("Ivan", "Kysil", "123-456-7890", "kysil@gmail.com", "kysil456"));
+
     }
 
     public void add(Contact contact) {

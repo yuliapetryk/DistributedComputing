@@ -11,7 +11,7 @@ public class ContactsTest {
 
     @Before
     public void setUp() {
-        contacts = new Contacts();
+        contacts = new Contacts("new");
         contacts.add(new Contact("Stepan", "Kysil", "123-456-7890"));
         contacts.add(new EmailContact("Ivan", "Kysil", "123-456-7890", "kysil@gmail.com"));
         contacts.add(new SocialMediaContact("Petro", "Kysil", "123-456-7123", "kysilpetro@gmail.com", "kysil123"));
