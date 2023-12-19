@@ -31,8 +31,8 @@ Contacts contacts;
     }
 
     @Override
-    public Contact mergeContacts(String index1, String index2) throws IOException {
-        return  contacts.mergeContacts(Integer.parseInt(index1),Integer.parseInt(index2));
+    public String mergeContacts(String index1, String index2) throws IOException {
+        return  contacts.mergeContacts(Integer.parseInt(index1),Integer.parseInt(index2)).toString();
     }
 
 }

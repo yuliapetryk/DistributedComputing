@@ -13,6 +13,6 @@ public interface Manager extends Remote {
 
     public String  sortByName() throws IOException ;
 
-    public Contact mergeContacts(String index1, String index2) throws IOException ;
+    public String mergeContacts(String index1, String index2) throws IOException ;
 
 }

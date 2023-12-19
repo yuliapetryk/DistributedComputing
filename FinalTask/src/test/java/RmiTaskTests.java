@@ -51,7 +51,9 @@ public class RmiTaskTests {
             String expected = "[Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com, Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com Nickname: kysil456, Name: Petro Surname: Kysil Phone: 123-456-7123 Email: kysilpetro@gmail.com Nickname: kysil123, Name: Stepan Surname: Kysil Phone: 123-456-7890]";
             assertEquals(expected,  clientRmiTask3.sortByName());
 
-
+            String expected2 = "Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com Nickname: kysil456";
+            assertEquals(expected2, clientRmiTask3.mergeContacts("1", "3") );
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

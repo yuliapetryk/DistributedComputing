@@ -61,7 +61,7 @@ public class ServerSocketTask3 {
                     response = contacts.sortByName().toString();
                     break;
                 case "4" :
-                    response = String.valueOf(contacts.mergeContacts(Integer.parseInt(parameters[1]), Integer.parseInt(parameters[1])));
+                    response = String.valueOf(contacts.mergeContacts(Integer.parseInt(parameters[1]), Integer.parseInt(parameters[2])));
                     break;
                 case "5" :
                 {

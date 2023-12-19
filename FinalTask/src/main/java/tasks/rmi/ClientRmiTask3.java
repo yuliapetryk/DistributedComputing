@@ -33,12 +33,14 @@ public class ClientRmiTask3 {
 
     public static String sortByName() throws IOException {
         StringBuilder result= new StringBuilder();
-            result.append(manager.sortByName());
+        result.append(manager.sortByName());
         return result.toString();
     }
 
-    public static Contact mergeContacts(String index1, String index2) throws IOException {
-       return manager.mergeContacts(index1, index2);
+    public static String mergeContacts(String index1, String index2) throws IOException {
+        StringBuilder result= new StringBuilder();
+        result.append(manager.mergeContacts(index1, index2));
+        return result.toString();
     }
 
 }

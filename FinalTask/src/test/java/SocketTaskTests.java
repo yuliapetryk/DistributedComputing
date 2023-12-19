@@ -2,6 +2,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import tasks.data.Contact;
+import tasks.data.EmailContact;
+import tasks.data.SocialMediaContact;
 import tasks.socket.ClientSocketTask3;
 import tasks.socket.ServerSocketTask3;
 
@@ -57,6 +59,10 @@ public class SocketTaskTests {
             String expected = "[Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com, Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com Nickname: kysil456, Name: Petro Surname: Kysil Phone: 123-456-7123 Email: kysilpetro@gmail.com Nickname: kysil123, Name: Stepan Surname: Kysil Phone: 123-456-7890]";
             Thread.sleep(WAIT_TIME);
             assertEquals(expected,  ClientSocketTask3.readResponse());
+
+            ClientSocketTask3.mergeContacts("1", "3");
+            String expected2 = "Name: Ivan Surname: Kysil Phone: 123-456-7890 Email: kysil@gmail.com Nickname: kysil456";
+            assertEquals(expected2,  ClientSocketTask3.readResponse() );
 
             client.disconnect();
 
